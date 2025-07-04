@@ -112,6 +112,19 @@
       pointer-events: none;
       z-index: 2;
     }
+
+    .footer {
+      position: fixed;
+      left: 0;
+      bottom: 0;
+      padding: 12px 18px;
+      color: #b6c2d1;
+      font-size: 1rem;
+      font-family: var(--main-font);
+      opacity: 0.85;
+      z-index: 10;
+      user-select: none;
+    }
   </style>
 </head>
 <body>
@@ -119,6 +132,7 @@
     <span class="title-line">parallel matter</span>
   </h1>
   <canvas id="sparkle-canvas"></canvas>
+  <footer class="footer">© 2025 Parallel Matter. All rights reserved.</footer>
   <script>
     const canvas = document.getElementById('sparkle-canvas');
     const ctx = canvas.getContext('2d');
