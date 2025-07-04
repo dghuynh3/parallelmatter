@@ -200,25 +200,68 @@
 
     function animate() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      sparkles = sparkles.filter(s => s.life < 80);
+      sparkles = sparkles.filter(s => s.life < 240); // Even longer life for stream fade
       for (const s of sparkles) {
         interactWithMouse(s);
+        // If not in title, gravitate toward title center
+        if (!s.inTitle) {
+          // Calculate center of title
+          if (titleBox) {
+            const centerX = (titleBox.left + titleBox.right) / 2;
+            const centerY = (titleBox.top + titleBox.bottom) / 2;
+            // Only gravitate if below the title
+            if (s.y > titleBox.bottom) {
+              const dx = centerX - s.x;
+              const dy = centerY - s.y;
+              const dist = Math.sqrt(dx * dx + dy * dy);
+              if (dist > 2) {
+                s.x += dx / dist * 0.25; // gentle gravitate
+                s.y += dy / dist * 0.18;
+              }
+            }
+          }
+        }
         // Check if sparkle is in the title area
         if (!s.inTitle && isInTitle(s)) {
           s.inTitle = true;
-          s.speedX = 0; // Move straight up
-          s.x = Math.max(titleBox.left, Math.min(s.x, titleBox.right)); // Clamp to title width
+          s.flashFrame = 0; // Start flash
+          s.speedX = 0;
+          s.x = Math.max(titleBox.left, Math.min(s.x, titleBox.right));
         }
         if (s.inTitle) {
-          s.speedX = 0;
-          s.speedY = -0.25; // Move straight up, a bit faster
+          if (s.flashFrame !== undefined && s.flashFrame < 6) {
+            // Flash white for a few frames
+            ctx.save();
+            ctx.globalAlpha = 0.9 * (1 - s.flashFrame / 6);
+            ctx.beginPath();
+            ctx.arc(s.x, s.y, s.size * 2.5, 0, 2 * Math.PI);
+            ctx.fillStyle = '#fff';
+            ctx.shadowColor = '#fff';
+            ctx.shadowBlur = 24;
+            ctx.fill();
+            ctx.restore();
+            s.flashFrame++;
+            // Hold position during flash
+          } else {
+            // After flash, stream up in a straight line
+            s.speedX = 0;
+            s.speedY = -1.2;
+            drawSparkle(s);
+            s.x += s.speedX;
+            s.y += s.speedY;
+            // Fade out as it streams up, after a while
+            if (s.life > 180) {
+              s.alpha *= 0.97; // fade out slower, longer shelf life
+            }
+          }
+        } else {
+          drawSparkle(s);
+          s.x += s.speedX;
+          s.y += s.speedY;
         }
-        drawSparkle(s);
-        s.x += s.speedX;
-        s.y += s.speedY;
         s.life++;
       }
-      if (Math.random() < 0.5) {
+      if (Math.random() < 0.425) { // Reduce sparkle creation by ~15%
         sparkles.push(createSparkle());
       }
       requestAnimationFrame(animate);
