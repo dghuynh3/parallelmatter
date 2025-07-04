@@ -152,11 +152,12 @@
       const x = window.innerWidth / 2 + (Math.random() - 0.5) * spreadX;
       const y = window.innerHeight / 2 + 60 + (Math.random() - 0.2) * spreadY;
       const size = Math.random() * 0.7 + 0.7;
-      const color = sparkleColors[Math.floor(Math.random() * sparkleColors.length)];
+      // Always start as white
+      const color = '#fff';
       const alpha = Math.random() * 0.1 + 0.2;
       const speedY = Math.random() * -0.15 - 0.05;
       const speedX = (Math.random() - 0.5) * 0.15;
-      return { x, y, size, color, alpha, speedY, speedX, life: 0, inTitle: false };
+      return { x, y, size, color, alpha, speedY, speedX, life: 0, inTitle: false, colored: false };
     }
 
     function isInTitle(s) {
@@ -193,8 +194,13 @@
           }
         }
 
+        // When entering the title area, change to a color (but only once)
         if (!s.inTitle && isInTitle(s)) {
           s.inTitle = true;
+          if (!s.colored) {
+            s.color = sparkleColors[Math.floor(Math.random() * (sparkleColors.length - 1)) + 1]; // skip white
+            s.colored = true;
+          }
           s.speedX = 0;
           s.x = Math.max(titleBox.left, Math.min(s.x, titleBox.right));
         }
@@ -209,6 +215,8 @@
             s.alpha *= 0.97;
           }
         } else {
+          // If not in title, always white
+          s.color = '#fff';
           drawSparkle(s);
           s.x += s.speedX;
           s.y += s.speedY;
