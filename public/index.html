@@ -4,70 +4,69 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>parallelmatter</title>
+  <link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@400;700;800&display=swap" rel="stylesheet">
   <style>
+    :root {
+      --main-font: 'League Spartan', sans-serif;
+    }
     body {
-      font-family: sans-serif;
+      font-family: var(--main-font);
       display: flex;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
       height: 100vh;
       margin: 0;
       background-color: #ffffff;
-      color: #2822a3;
+      user-select: none;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
     }
-    h1 { font-size: 3rem; margin-bottom: 0.5rem; }
-    p { font-size: 1.25rem; color: #C4CBCA; }
-    .hover-text-effect {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.05em;
+
+    h1 {
       font-size: 3rem;
-      font-weight: bold;
-      cursor: pointer;
-      background: linear-gradient(90deg, #6e8efb, #a777e3, #f7797d, #FBD786, #C6FFDD);
-      background-size: 200% 200%;
-      background-clip: text;
+      font-weight: 500;
+      background: linear-gradient(
+        270deg,
+        #6e8efb,
+        #a777e3,
+        #f7797d,
+        #FBD786,
+        #C6FFDD,
+        #6e8efb
+      );
+      background-size: 600% 600%;
       -webkit-background-clip: text;
-      color: transparent;
       -webkit-text-fill-color: transparent;
-      transition: background-position 0.5s;
-      position: relative;
+      animation: gradientFlow 12s ease infinite;
+      text-align: center;
+      margin: 0;
     }
-    .hover-text-effect span {
-      position: relative;
-      display: inline-block;
-      transition: transform 0.3s cubic-bezier(.25,1,.5,1), color 0.3s;
-    }
-    .hover-text-effect span::after {
-      content: '';
-      display: block;
-      position: absolute;
-      left: 0; right: 0; bottom: -0.1em;
-      height: 2px;
-      background: linear-gradient(90deg, #6e8efb, #a777e3, #f7797d, #FBD786, #C6FFDD);
-      opacity: 0;
-      transform: scaleX(0);
-      transition: opacity 0.3s, transform 0.3s;
-    }
-    .hover-text-effect span:hover {
-      transform: translateY(-0.15em) scale(1.1) rotate(-2deg);
-      z-index: 1;
-    }
-    .hover-text-effect span:hover::after {
-      opacity: 1;
-      transform: scaleX(1);
-    }
-    .hover-text-effect:hover {
-      background-position: 100% 0;
+
+    @keyframes gradientFlow {
+      0% {
+        background-position: 0% 50%;
+      }
+      50% {
+        background-position: 100% 50%;
+      }
+      100% {
+        background-position: 0% 50%;
+      }
     }
   </style>
+  <script>
+    // Disable right-click context menu
+    document.addEventListener('contextmenu', function(e) {
+      e.preventDefault();
+    });
+    // Disable copy event
+    document.addEventListener('copy', function(e) {
+      e.preventDefault();
+    });
+  </script>
 </head>
 <body>
-  <h1 class="hover-text-effect">
-    <span>P</span><span>a</span><span>r</span><span>a</span><span>l</span><span>l</span><span>e</span><span>l</span>
-    <span style="margin-left:0.5rem"></span>
-    <span>M</span><span>a</span><span>t</span><span>t</span><span>e</span><span>r</span>
-  </h1>
+  <h1>parallel matter</h1>
 </body>
 </html>
