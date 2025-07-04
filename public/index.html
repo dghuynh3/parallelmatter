@@ -18,9 +18,6 @@
       margin: 0;
       background-color: #081524;
       user-select: none;
-      -webkit-user-select: none;
-      -moz-user-select: none;
-      -ms-user-select: none;
     }
 
     h1 {
@@ -62,6 +59,7 @@
       gap: 0.2em;
       margin: 0;
     }
+
     .title-line {
       display: inline-block;
       letter-spacing: 0.12em;
@@ -83,6 +81,7 @@
       text-align: center;
       width: auto;
     }
+
     @media (max-width: 600px) {
       .title-line {
         font-size: 2rem;
@@ -98,16 +97,6 @@
       z-index: 2;
     }
   </style>
-  <script>
-    // Disable right-click context menu
-    document.addEventListener('contextmenu', function(e) {
-      e.preventDefault();
-    });
-    // Disable copy event
-    document.addEventListener('copy', function(e) {
-      e.preventDefault();
-    });
-  </script>
 </head>
 <body>
   <h1 class="stacked-title">
@@ -115,12 +104,10 @@
   </h1>
   <canvas id="sparkle-canvas"></canvas>
   <script>
-    // Sparkle effect below the title, with ambient spread, subtle alpha, and mouse interaction
     const canvas = document.getElementById('sparkle-canvas');
     const ctx = canvas.getContext('2d');
     let sparkles = [];
     const sparkleColors = ['#fff', '#FBD786', '#C6FFDD', '#a777e3', '#f7797d'];
-    let mouse = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
 
     function resizeCanvas() {
       canvas.width = window.innerWidth;
@@ -129,46 +116,35 @@
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
 
-    // Mouse tracking
-    window.addEventListener('mousemove', e => {
-      mouse.x = e.clientX;
-      mouse.y = e.clientY;
-    });
-
-    // Get title bounding box for transition
     const titleElem = document.querySelector('.title-line');
     let titleBox = null;
     function updateTitleBox() {
-      if (titleElem) {
-        const rect = titleElem.getBoundingClientRect();
-        titleBox = {
-          left: rect.left,
-          right: rect.right,
-          top: rect.top,
-          bottom: rect.bottom
-        };
-      }
+      const rect = titleElem.getBoundingClientRect();
+      titleBox = {
+        left: rect.left,
+        right: rect.right,
+        top: rect.top,
+        bottom: rect.bottom
+      };
     }
     window.addEventListener('resize', updateTitleBox);
     updateTitleBox();
 
     function createSparkle() {
-      // Spread: wide, but mostly below the title
       const spreadX = window.innerWidth * 0.7;
       const spreadY = 120;
       const x = window.innerWidth / 2 + (Math.random() - 0.5) * spreadX;
       const y = window.innerHeight / 2 + 60 + (Math.random() - 0.2) * spreadY;
-      const size = Math.random() * 0.7 + 0.7; // 0.7 - 1.4 px
+      const size = Math.random() * 0.7 + 0.7;
       const color = sparkleColors[Math.floor(Math.random() * sparkleColors.length)];
-      const alpha = Math.random() * 0.1 + 0.2; // 0.2 - 0.3
-      const speedY = Math.random() * -0.15 - 0.05; // slow upward
-      const speedX = (Math.random() - 0.5) * 0.15; // slow sideways
+      const alpha = Math.random() * 0.1 + 0.2;
+      const speedY = Math.random() * -0.15 - 0.05;
+      const speedX = (Math.random() - 0.5) * 0.15;
       return { x, y, size, color, alpha, speedY, speedX, life: 0, inTitle: false };
     }
 
     function isInTitle(s) {
       if (!titleBox) return false;
-      // Sparkle is in the title if its center is within the title bounding box
       return s.x >= titleBox.left && s.x <= titleBox.right && s.y >= titleBox.top && s.y <= titleBox.bottom;
     }
 
@@ -178,79 +154,43 @@
       ctx.beginPath();
       ctx.arc(s.x, s.y, s.size, 0, 2 * Math.PI);
       ctx.fillStyle = s.color;
-      ctx.shadowColor = s.color;
-      ctx.shadowBlur = 16;
-      ctx.filter = 'brightness(1.7)';
       ctx.fill();
-      ctx.filter = 'none';
       ctx.restore();
-    }
-
-    function interactWithMouse(s) {
-      // If sparkle is near mouse, gently repel
-      const dx = s.x - mouse.x;
-      const dy = s.y - mouse.y;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      if (dist < 60) {
-        const force = (60 - dist) / 120; // gentle
-        s.x += dx / dist * force * 2;
-        s.y += dy / dist * force * 2;
-      }
     }
 
     function animate() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       sparkles = sparkles.filter(s => s.life < 240);
       for (const s of sparkles) {
-        interactWithMouse(s);
-        // If not in title, gravitate toward title center
-        if (!s.inTitle) {
-          if (titleBox) {
-            const centerX = (titleBox.left + titleBox.right) / 2;
-            const centerY = (titleBox.top + titleBox.bottom) / 2;
-            if (s.y > titleBox.bottom) {
-              const dx = centerX - s.x;
-              const dy = centerY - s.y;
-              const dist = Math.sqrt(dx * dx + dy * dy);
-              if (dist > 2) {
-                // Smoother gravitate
-                s.x += dx / dist * 0.16;
-                s.y += dy / dist * 0.11;
-                // Add a little easing for smoothness
-                s.x += (Math.random() - 0.5) * 0.04;
-                s.y += (Math.random() - 0.5) * 0.04;
-              }
-            }
+        // Gravitate to title
+        if (!s.inTitle && titleBox && s.y > titleBox.bottom) {
+          const centerX = (titleBox.left + titleBox.right) / 2;
+          const centerY = (titleBox.top + titleBox.bottom) / 2;
+          const dx = centerX - s.x;
+          const dy = centerY - s.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist > 2) {
+            s.x += dx / dist * 0.16;
+            s.y += dy / dist * 0.11;
+            s.x += (Math.random() - 0.5) * 0.04;
+            s.y += (Math.random() - 0.5) * 0.04;
           }
         }
-        // Check if sparkle is in the title area
+
         if (!s.inTitle && isInTitle(s)) {
           s.inTitle = true;
-          s.flashFrame = 0;
           s.speedX = 0;
           s.x = Math.max(titleBox.left, Math.min(s.x, titleBox.right));
         }
+
         if (s.inTitle) {
-          if (s.flashFrame !== undefined && s.flashFrame < 6) {
-            ctx.save();
-            ctx.globalAlpha = 0.18 * (1 - s.flashFrame / 6); // Much more subtle flash
-            ctx.beginPath();
-            ctx.arc(s.x, s.y, s.size * 2.1, 0, 2 * Math.PI); // Slightly smaller flash
-            ctx.fillStyle = '#fff';
-            ctx.shadowColor = '#fff';
-            ctx.shadowBlur = 12; // Softer glow
-            ctx.fill();
-            ctx.restore();
-            s.flashFrame++;
-          } else {
-            s.speedX = 0;
-            s.speedY = -1.1;
-            drawSparkle(s);
-            s.x += s.speedX;
-            s.y += s.speedY;
-            if (s.life > 180) {
-              s.alpha *= 0.97;
-            }
+          s.speedX = 0;
+          s.speedY = -1.1;
+          drawSparkle(s);
+          s.x += s.speedX;
+          s.y += s.speedY;
+          if (s.life > 180) {
+            s.alpha *= 0.97;
           }
         } else {
           drawSparkle(s);
@@ -259,11 +199,14 @@
         }
         s.life++;
       }
-      if (Math.random() < 0.32) { // Reduce sparkle creation by ~25%
+
+      // Cap max sparkles
+      if (sparkles.length < 120 && Math.random() < 0.32) {
         sparkles.push(createSparkle());
       }
       requestAnimationFrame(animate);
     }
+
     animate();
   </script>
 </body>
