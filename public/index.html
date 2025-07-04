@@ -157,7 +157,9 @@
       const alpha = Math.random() * 0.1 + 0.2;
       const speedY = Math.random() * -0.15 - 0.05;
       const speedX = (Math.random() - 0.5) * 0.15;
-      return { x, y, size, color, alpha, speedY, speedX, life: 0, inTitle: false, colored: false };
+      // Add a random upward speed for when inTitle
+      const streamSpeedY = -(Math.random() * 1.2 + 0.5); // Range: -0.5 to -1.7
+      return { x, y, size, color, alpha, speedY, speedX, life: 0, inTitle: false, colored: false, streamSpeedY };
     }
 
     function isInTitle(s) {
@@ -207,12 +209,13 @@
 
         if (s.inTitle) {
           s.speedX = 0;
-          s.speedY = -1.1;
+          s.speedY = s.streamSpeedY; // Use randomized upward speed
           drawSparkle(s);
           s.x += s.speedX;
           s.y += s.speedY;
-          if (s.life > 180) {
-            s.alpha *= 0.97;
+          // Fade out as they approach the end of their life or move above the title
+          if (s.life > 180 || s.y < titleBox.top - 30) {
+            s.alpha *= 0.96;
           }
         } else {
           // If not in title, always white
@@ -228,6 +231,8 @@
       if (sparkles.length < 120 && Math.random() < 0.2) {
         sparkles.push(createSparkle());
       }
+      // Remove sparkles when fully transparent
+      sparkles = sparkles.filter(s => s.life < 240 && s.alpha > 0.03);
       requestAnimationFrame(animate);
     }
 
