@@ -135,6 +135,23 @@
       mouse.y = e.clientY;
     });
 
+    // Get title bounding box for transition
+    const titleElem = document.querySelector('.title-line');
+    let titleBox = null;
+    function updateTitleBox() {
+      if (titleElem) {
+        const rect = titleElem.getBoundingClientRect();
+        titleBox = {
+          left: rect.left,
+          right: rect.right,
+          top: rect.top,
+          bottom: rect.bottom
+        };
+      }
+    }
+    window.addEventListener('resize', updateTitleBox);
+    updateTitleBox();
+
     function createSparkle() {
       // Spread: wide, but mostly below the title
       const spreadX = window.innerWidth * 0.7;
@@ -146,7 +163,13 @@
       const alpha = Math.random() * 0.1 + 0.2; // 0.2 - 0.3
       const speedY = Math.random() * -0.15 - 0.05; // slow upward
       const speedX = (Math.random() - 0.5) * 0.15; // slow sideways
-      return { x, y, size, color, alpha, speedY, speedX, life: 0 };
+      return { x, y, size, color, alpha, speedY, speedX, life: 0, inTitle: false };
+    }
+
+    function isInTitle(s) {
+      if (!titleBox) return false;
+      // Sparkle is in the title if its center is within the title bounding box
+      return s.x >= titleBox.left && s.x <= titleBox.right && s.y >= titleBox.top && s.y <= titleBox.bottom;
     }
 
     function drawSparkle(s) {
@@ -156,8 +179,8 @@
       ctx.arc(s.x, s.y, s.size, 0, 2 * Math.PI);
       ctx.fillStyle = s.color;
       ctx.shadowColor = s.color;
-      ctx.shadowBlur = 16; // Increased from 8 to 16 for more glow
-      ctx.filter = 'brightness(1.7)'; // Make sparkles brighter
+      ctx.shadowBlur = 16;
+      ctx.filter = 'brightness(1.7)';
       ctx.fill();
       ctx.filter = 'none';
       ctx.restore();
@@ -180,6 +203,16 @@
       sparkles = sparkles.filter(s => s.life < 80);
       for (const s of sparkles) {
         interactWithMouse(s);
+        // Check if sparkle is in the title area
+        if (!s.inTitle && isInTitle(s)) {
+          s.inTitle = true;
+          s.speedX = 0; // Move straight up
+          s.x = Math.max(titleBox.left, Math.min(s.x, titleBox.right)); // Clamp to title width
+        }
+        if (s.inTitle) {
+          s.speedX = 0;
+          s.speedY = -0.25; // Move straight up, a bit faster
+        }
         drawSparkle(s);
         s.x += s.speedX;
         s.y += s.speedY;
